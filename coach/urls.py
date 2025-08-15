@@ -10,6 +10,7 @@ urlpatterns=[
     path("investments/", views.investments, name="investments"),
     path("add_investment/", views.add_investment, name="add_investment"),
     path("add_to_investment/", views.add_to_investment, name="add_to_investment"),
+    path("investment_details/<int:id>/", views.investment_details, name="investment_details"),
     
     path("savings/", views.savings, name="savings"),
 

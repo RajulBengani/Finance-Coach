@@ -104,6 +104,26 @@ def add_to_investment(request):
         form = AddToExistingInvestmentForm()
     return render(request, 'coach/add_transaction.html', {'form': form})
 
+def investment_details(request, id):
+    investment = get_object_or_404(Investment, pk=id)
+    if request.method == "POST":
+        if "delete" in request.POST:
+            investment.delete()
+            messages.success(request, "Investment deleted successfully!")
+            return redirect('investments')
+        form = NewInvestmentForm(request.POST, instance=investment)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Investment updated successfully!")
+            return redirect('investments')
+    else:
+        form = NewInvestmentForm(instance=investment)
+
+    return render(request, 'coach/investment_details.html', {
+        'form': form,
+        'investment': investment,
+    })
+
 
 #def transaction_history(request, investment_id=None):
     if investment_id:
