@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .forms import TransactionForm, TransactionFilterForm, NewInvestmentForm, AddToExistingInvestmentForm
 from .models import Transaction, Category, Investment, InvestmentTransaction
 from django.contrib import messages
-from django.db.models import Sum, Prefetch
+from django.db.models import Sum, Prefetch, Case, When, F, DecimalField
 # Create your views here.
 def home(request):
     total_income = Transaction.objects.filter(type='income').aggregate(Sum('amount'))['amount__sum'] or 0
@@ -67,10 +67,21 @@ def investments(request):
     investments = Investment.objects.prefetch_related(
         Prefetch(
             'transactions',
-            queryset=InvestmentTransaction.objects.order_by('-date')
+            queryset=InvestmentTransaction.objects.only(
+                'id', 'date', 'transaction_type', 'description', 'amount'
+            ).order_by('-date')
         )
-    ).order_by('-date_created')  # use 'date_created' instead of 'date'
-    
+    ).annotate(
+        total_amount=Sum(
+            Case(
+                When(transactions__transaction_type='buy', then=F('transactions__amount')),
+                When(transactions__transaction_type='sell', then=-F('transactions__amount')),
+                default=0,
+                output_field=DecimalField()
+            )
+        )
+    ).order_by('-date_created')
+
     return render(request, 'coach/investments.html', {'investments': investments})
 
 def add_investment(request):
