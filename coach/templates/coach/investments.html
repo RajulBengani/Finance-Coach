@@ -1,0 +1,85 @@
+{% extends 'coach/layout.html' %}
+
+{% block content %}
+<h2>Your Investments</h2>
+
+<p>
+    <a href="{% url 'add_investment' %}">Add New Investment</a> |
+    <a href="{% url 'add_to_investment' %}">Add to Existing Investment</a>
+</p>
+
+{% if investments %}
+<h3>Investments Overview</h3>
+<table border="1" cellpadding="5" cellspacing="0">
+    <thead>
+        <tr>
+            <th>Investment Name</th>
+            <th>Type</th>
+            <th>Risk Level</th>
+            <th>Total Invested</th>
+            <th>Current Value</th>
+            <th>Profit/Loss</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for investment in investments %}
+        <tr>
+            <td>{{ investment.name }}</td>
+            <td>{{ investment.get_investment_type_display }}</td>
+            <td>{{ investment.get_risk_level_display }}</td>
+            <td>{{ investment.total_amount_invested }}</td>
+            <td>
+                {% if investment.current_value %}
+                    {{ investment.current_value }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>
+                {% if investment.profit_loss %}
+                    {{ investment.profit_loss }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3>Recent Transactions</h3>
+<table border="1" cellpadding="5" cellspacing="0">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Investment</th>
+            <th>Description</th>
+            <th>Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for investment in investments %}
+            {% for txn in investment.transactions.all %}
+            <tr>
+                <td>{{ txn.date }}</td>
+                <td>{{ txn.get_transaction_type_display }}</td>
+                <td>{{ investment.name }}</td>
+                <td>{{ txn.description|default:"-" }}</td>
+                <td>{{ txn.amount }}</td>
+            </tr>
+            {% endfor %}
+        {% endfor %}
+        {% if investments|length == 0 %}
+        <tr>
+            <td colspan="5">No transactions found.</td>
+        </tr>
+        {% endif %}
+    </tbody>
+</table>
+
+{% else %}
+<p>You have no investments yet. Start by <a href="{% url 'add_investment' %}">adding your first investment</a>!</p>
+{% endif %}
+
+{% endblock %}

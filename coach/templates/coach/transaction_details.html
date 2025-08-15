@@ -1,0 +1,13 @@
+{% extends 'coach/base.html'%}
+{% block content %}
+<h2>Transaction Details</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit">Update</button>
+    <button type="submit" name="delete" onclick="return confirm('Are you sure you want to delete this transaction?')">Delete</button>
+</form>
+
+<a href="{% url 'transactions' %}">Back to Transactions</a>
+{% endblock %}
