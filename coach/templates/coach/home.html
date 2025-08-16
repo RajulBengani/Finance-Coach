@@ -1,9 +1,0 @@
-{% extends 'coach/layout.html' %}
-{% block content %}
-<h2>Welcome to Finance Coach</h2>
-<p>Total Income:{{total_income}}</p>
-<p>Total Expenses:{{total_expense}}</p>
-<p>Balance:{{total_balance}}</p>
-
-<a href="{% url 'add_transaction' %}">Add Transaction</a>
-{% endblock%}

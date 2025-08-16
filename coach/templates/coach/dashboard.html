@@ -1,0 +1,90 @@
+{% extends 'coach/layout.html' %}
+{% block content %}
+<h2>Hey {{name}}! This is your Financial Coach</h2>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<div class="cards">
+    <div class="card">
+        <h3>Income, Expense and Savings Chart</h3>
+        <canvas id="summaryChart"></canvas>
+    </div>
+    <div class="card">
+        <h3>Category-Wise Expense only chart</h3>
+        <canvas id="categoryChart"></canvas>
+    </div>
+    <div class="card">
+        <h3>Goal Progress</h3>
+        {% for g in goal_progress %}
+         <div style="margin-bottom: 15px;">
+            <strong><a href="{% url 'edit_goal' g.id%}">{{g.name}}</a></strong> ({{g.current}} / {{g.target}})
+            <div style="background:#eee; border-radius:10px; overflow:hidden; height:20px; margin-top:5px;">
+                <div style="background:#2196F3; height:100%; width: {{g.percent}}%;"></div>
+            </div>
+            <small>{{g.percent}}%</small>
+        </div>
+    {% endfor %}
+    </div>
+    <div class="card">
+        <h3>graph of expenses of last 10 days</h3>
+        <canvas id="dailyChart"></canvas>
+    </div>
+    <div class="card">
+        <h3>AI Recommendation, Latest Fin News related to personal finance, tax,
+            stock market, mutual funds, IPOs, etc.</h3>
+    </div>
+</div>
+<script>
+    //Income, Expense, Savings
+    new Chart(document.getElementById('summaryChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Income', 'Expense(s)', 'Saving(s)'],
+            datasets: [{
+                data: [{{income}}, {{expenses}}, {{savings}}],
+                backgroundColor: ['#4CAF50', '#F44336', '#2196F3']
+            }]
+        },
+    });
+    //Category-wise Expense
+    new Chart(document.getElementById('categoryChart'), {
+        type: 'pie',
+        data: {
+            labels: [{% for c in category_expenses %}'{{c.category__name}}',{% endfor %}],
+            datasets: [{
+                data: [{% for c in category_expenses %}{{c.total}},{% endfor %}],
+                backgroundColor: ['#FF9800', '#9C27B0', '#03A9F4', '#E91E63', '#8BC34A']
+            }]
+        }
+    });
+    //Goal Progress
+    new Chart(document.getElementById('goalChart'), {
+        type: 'bar',
+        data: {
+            labels: [{% for g in goals %}'{{g.name}}',{% endfor %}],
+            datasets: [{
+                label: 'Current',
+                data: [{% for g in goals %}{{g.current_amount}},{% endfor %}],
+                backgroundColor: '#2196F3'
+            }, {
+                label: 'Target',
+                data: [{% for g in goals %}{{g.target_amount}},{% endfor %}],
+                backgroundColor: '#F44336'
+            }]
+        },
+        options: {responsive: true, scales: {y: {beginAtZero: true}}}
+    });
+    // Last 10 days expenses
+    new Chart(document.getElementById('dailyChart'), {
+        type: 'line',
+        data: {
+            labels: [{% for e in expenses_last_10_days %}'{{e.date}}',{% endfor %}],
+            datasets: [{
+                label: 'Expenses',
+                data: [{% for e in expenses_last_10_days %}{{e.total}},{% endfor %}],
+                borderColor: '#FF5722',
+                fill: false,
+                tension: 0.3
+            }]
+        }
+    });
+</script>
+{% endblock%}

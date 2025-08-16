@@ -1,5 +1,7 @@
 from django import forms
-from .models import Transaction, Category, Investment, InvestmentTransaction
+from .models import Transaction, Goal, UserProfile, Category
+from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm
 
 class TransactionForm(forms.ModelForm):
     class Meta:
@@ -19,81 +21,38 @@ class TransactionForm(forms.ModelForm):
             'date': 'Date',
             'description': 'Description (optional)',
         }
-
-class TransactionFilterForm(forms.Form):
-    start_date = forms.DateField(
-        required=False,
-        widget=forms.DateInput(attrs={'type': 'date'})
-    )
-    end_date = forms.DateField(
-        required=False,
-        widget=forms.DateInput(attrs={'type': 'date'})
-    )
-    category = forms.ModelChoiceField(
-        queryset=Category.objects.all(),
-        required=False,
-        empty_label="All Categories"
-    )
-    TYPE_CHOICES = [
-        ('', 'All Types'),
-        ('income', 'Income'),
-        ('expense', 'Expense'),
-        ('savings', 'Savings'),
-        ('investment', 'Investment'),
-    ]
-    type = forms.ChoiceField(
-        choices=TYPE_CHOICES,
-        required=False
-    )
-
-class NewInvestmentForm(forms.ModelForm):
+class GoalForm(forms.ModelForm):
     class Meta:
-        model = Investment
-        fields = ['name', 'investment_type', 'total_amount_invested', 
-                  'current_value', 'risk_level', 'date_created', 'description']
+        model = Goal
+        fields = ['name', 'target_amount', 'current_amount', 'target_date']
         widgets = {
-            'name': forms.TextInput(attrs={'placeholder': 'Enter investment name'}),
-            'investment_type': forms.Select(attrs={'class': 'form-select'}),
-            'total_amount_invested': forms.NumberInput(attrs={'step': '0.01', 'placeholder': 'Enter initial amount'}),
-            'current_value': forms.NumberInput(attrs={'step': '0.01', 'placeholder': 'Enter current value (optional)'}),
-            'risk_level': forms.Select(attrs={'class': 'form-select'}),
-            'date_created': forms.DateInput(attrs={'type': 'date'}),
-            'description': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Enter a description (optional)'}),
+            'target_date': forms.DateInput(attrs={'type': 'date'}),
+            'name': forms.TextInput(attrs={'placeholder': 'Enter goal name'}),
+            'target_amount': forms.NumberInput(attrs={'step': '0.01', 'placeholder': 'Enter target amount'}),
+            'current_amount': forms.NumberInput(attrs={'step': '0.01', 'placeholder': 'Enter current amount'}),
         }
         labels = {
-            'name': 'Investment Name',
-            'investment_type': 'Investment Type',
-            'total_amount_invested': 'Initial Amount',
-            'current_value': 'Current Value (optional)',
-            'risk_level': 'Risk Level',
-            'date_created': 'Investment Date',
-            'description': 'Description (optional)',
+            'name': 'Goal Name',
+            'target_amount': 'Target Amount',
+            'current_amount': 'Current Amount',
+            'target_date': 'Target Date',
         }
 
-class AddToExistingInvestmentForm(forms.ModelForm):
-    investment = forms.ModelChoiceField(
-        queryset=Investment.objects.all(),
-        required=True,
-        label="Select Investment",
-        widget=forms.Select(attrs={'class': 'form-select'})
-    )
-    transaction_type = forms.ChoiceField(
-        choices=InvestmentTransaction.TRANSACTION_TYPES,
-        widget=forms.Select(attrs={'class': 'form-select'})
-    )
+class SignupForm(UserCreationForm):
+    email = forms.EmailField(required=True)
 
     class Meta:
-        model = InvestmentTransaction
-        fields = ['investment', 'transaction_type', 'amount', 'date', 'description']
+        model = User
+        fields = ('username', 'email', 'password1', 'password2')
         widgets = {
-            'amount': forms.NumberInput(attrs={'step': '0.01', 'placeholder': 'Enter amount'}),
-            'date': forms.DateInput(attrs={'type': 'date'}),
-            'description': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Enter a description (optional)'}),
+            'username': forms.TextInput(attrs={'placeholder': 'Enter username'}),
+            'email': forms.EmailInput(attrs={'placeholder': 'Enter email'}),
+            'password1': forms.PasswordInput(attrs={'placeholder': 'Enter password'}),
+            'password2': forms.PasswordInput(attrs={'placeholder': 'Confirm password'}),
         }
         labels = {
-            'investment': 'Investment',
-            'transaction_type': 'Transaction Type',
-            'amount': 'Amount',
-            'date': 'Date',
-            'description': 'Description (optional)',
+            'username': 'Username',
+            'email': 'Email',
+            'password1': 'Password',
+            'password2': 'Confirm Password',
         }

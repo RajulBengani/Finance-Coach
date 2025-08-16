@@ -1,17 +1,11 @@
 from django.urls import path
 from . import views
 urlpatterns=[
-    path("", views.home, name="home"),
-
-    path("transactions/", views.transactions, name="transactions"),
-    path('transactions_details/<int:id>/', views.transactions_details, name='transactions_details'),
+    path("", views.login_view, name="login"),
+    path("signup/", views.signup, name="signup"),
+    path("dashboard/", views.dashboard, name="dashboard"),
+    path("logout/", views.logout_view, name="logout"),
     path("add_transaction/", views.add_transaction, name="add_transaction"),
-
-    path("investments/", views.investments, name="investments"),
-    path("add_investment/", views.add_investment, name="add_investment"),
-    path("add_to_investment/", views.add_to_investment, name="add_to_investment"),
-    path("investment_details/<int:id>/", views.investment_details, name="investment_details"),
-    
-    path("savings/", views.savings, name="savings"),
-
-]
+    path("add_goal/", views.add_goal, name="add_goal"),
+    path("edit_goal/<int:goal_id>/", views.edit_goal, name="edit_goal"),
+    ]

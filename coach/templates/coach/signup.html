@@ -1,0 +1,44 @@
+{% extends 'coach/base.html' %}
+{% block content %}
+<section class="forms">
+  <h2>Signup</h2>
+  <form method="post">
+    {% csrf_token %}
+
+    <div>
+      {{ form.username.label_tag }}
+      {{ form.username }}
+      {% if form.username.errors %}
+        <div class="error">{{ form.username.errors }}</div>
+      {% endif %}
+    </div>
+
+    <div>
+      {{ form.email.label_tag }}
+      {{ form.email }}
+      {% if form.email.errors %}
+        <div class="error">{{ form.email.errors }}</div>
+      {% endif %}
+    </div>
+
+    <div>
+      {{ form.password1.label_tag }}
+      {{ form.password1 }}
+      {% if form.password1.errors %}
+        <div class="error">{{ form.password1.errors }}</div>
+      {% endif %}
+    </div>
+
+    <div>
+      {{ form.password2.label_tag }}
+      {{ form.password2 }}
+      {% if form.password2.errors %}
+        <div class="error">{{ form.password2.errors }}</div>
+      {% endif %}
+    </div>
+
+    <button type="submit">Signup</button>
+    <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+  </form>
+</section>
+{% endblock %}

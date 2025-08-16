@@ -1,10 +1,10 @@
 {% extends 'coach/base.html' %}
 {% block content %}
-<h2>Add New Transaction</h2>
+<h2>Add Goal</h2>
 <form method="post">
-    {% csrf_token %}
+     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Add Transaction</button>
+    <button type="submit">Add Goal</button>
 </form>
 <a href="{% url 'dashboard' %}">Go to Dashboard</a>
 {% endblock %}

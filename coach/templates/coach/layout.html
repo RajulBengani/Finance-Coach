@@ -1,8 +1,10 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'coach/styles.css' %}">
     <title>Finance Coach</title>
     
 </head>
@@ -11,10 +13,10 @@
         <h1>Finance Coach</h1>
         <nav>
             <ul>
-                <li><a href="{% url 'home' %}">Home</a></li>
-                <li><a href="{% url 'transactions'%}">Transactions</a></li>
-                <li><a href="{% url 'investments'%}">Investments</a></li>
-                <li><a href="{% url 'savings'%}">Savings</a></li>
+                <li><a href="{% url 'dashboard' %}">dashboard</a></li>
+                <li><a href="{% url 'add_transaction' %}">Add New Transaction</a></li>
+                <li><a href="{% url 'add_goal' %}">Add New Goal</a></li>
+                <li><a href="{% url 'logout' %}">Log Out</a></li>
             </ul>
         </nav>
     </header>

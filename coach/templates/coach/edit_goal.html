@@ -1,0 +1,9 @@
+{% extends "coach/layout.html" %}
+{% block content %}
+<h2>Edit Goal: {{ goal.name }}</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Update Goal</button>
+</form>
+{% endblock %}
