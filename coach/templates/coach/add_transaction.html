@@ -3,8 +3,56 @@
 <h2>Add New Transaction</h2>
 <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
+
+    <!-- Transaction Type -->
+    <label for="id_type">Transaction Type:</label>
+    <select name="type" id="id_type">
+        <option value="income" {% if form.type.value == 'income' %}selected{% endif %}>Income</option>
+        <option value="expense" {% if form.type.value == 'expense' %}selected{% endif %}>Expense</option>
+        <option value="savings" {% if form.type.value == 'savings' %}selected{% endif %}>Savings</option>
+    </select>
+
+    <!-- Goal (shown only if type = savings) -->
+    <div id="goal-field" style="display:none;">
+        {{ form.goal.label_tag }}
+        {{ form.goal }}
+    </div>
+
+    <!-- Other fields -->
+    {{ form.category.label_tag }}
+    {{ form.category }}
+    
+    {{ form.amount.label_tag }}
+    {{ form.amount }}
+    
+    {{ form.date.label_tag }}
+    {{ form.date }}
+    
+    {{ form.description.label_tag }}
+    {{ form.description }}
+
     <button type="submit">Add Transaction</button>
 </form>
+
 <a href="{% url 'dashboard' %}">Go to Dashboard</a>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const typeSelect = document.getElementById('id_type');
+    const goalField = document.getElementById('goal-field');
+
+    function toggleGoal() {
+        if (typeSelect.value === 'savings') {
+            goalField.style.display = 'block';
+        } else {
+            goalField.style.display = 'none';
+        }
+    }
+
+    typeSelect.addEventListener('change', toggleGoal);
+
+    // Initialize on page load
+    toggleGoal();
+});
+</script>
 {% endblock %}

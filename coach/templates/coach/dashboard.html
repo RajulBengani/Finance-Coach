@@ -1,11 +1,32 @@
 {% extends 'coach/layout.html' %}
+{% load static %}
 {% block content %}
 <h2>Hey {{name}}! This is your Financial Coach</h2>
+<div class="profile-section">
+  {% if profile and profile.profile_picture %}
+    <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" 
+         style="width:120px; height:120px; border-radius:50%; object-fit:cover;">
+  {% else %}
+    <img src="{% static 'images/default-profile.png' %}" alt="Default Profile Picture" 
+         style="width:120px; height:120px; border-radius:50%; object-fit:cover;">
+  {% endif %}
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <div class="cards">
     <div class="card">
         <h3>Income, Expense and Savings Chart</h3>
         <canvas id="summaryChart"></canvas>
+        <p>Available Balance: 
+            {% if net_income < 0 %}
+                <span style="color:red;">{{ net_income }}</span> (Overbudget!)
+            {% else %}
+                {{ net_income }}
+            {% endif %}
+        </p>
+        {% if warning_msg %}
+            <p style="color:red;">{{ warning_msg }}</p>
+        {% endif %}
     </div>
     <div class="card">
         <h3>Category-Wise Expense only chart</h3>
@@ -28,18 +49,41 @@
         <canvas id="dailyChart"></canvas>
     </div>
     <div class="card">
-        <h3>AI Recommendation, Latest Fin News related to personal finance, tax,
-            stock market, mutual funds, IPOs, etc.</h3>
+        <h3>Personalised Recommendations for savings, tax and expenses</h3>
+        <div style="margin-top:10px;">
+            <strong>💰 Savings Advice:</strong>
+            <p>{{ savings_msg }}</p>
+        </div>
+        <div style="margin-top:10px;">
+            <strong>🧾 Tax Advice:</strong>
+            <p>{{ tax_msg }}</p>
+        </div>
+        <div style="margin-top:10px;">
+            <strong>💸 Expense Advice:</strong>
+            <p>{{ expense_msg }}</p>
+        </div>
+        <div style="margin-top:10px;">
+        <strong>📊 Category-wise Expense Advice:</strong>
+        <ul>
+            {% for msg in category_expense_msgs %}
+                <li>{{ msg }}</li>
+            {% endfor %}
+        </ul>
+        </div> 
+    </div>
+    <div class="card">
+        <h3>Fin NEWS, recommendations from stock market and mutual fund</h3>
     </div>
 </div>
+
 <script>
     //Income, Expense, Savings
     new Chart(document.getElementById('summaryChart'), {
         type: 'doughnut',
         data: {
-            labels: ['Income', 'Expense(s)', 'Saving(s)'],
+            labels: ['Remaining Income', 'Expense(s)', 'Saving(s)'],
             datasets: [{
-                data: [{{income}}, {{expenses}}, {{savings}}],
+                data: [{{net_income}}, {{expenses}}, {{savings}}],
                 backgroundColor: ['#4CAF50', '#F44336', '#2196F3']
             }]
         },

@@ -33,7 +33,16 @@ class Transaction(models.Model):
     date = models.DateField(default=timezone.now)
     description = models.TextField(blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
+    goal = models.ForeignKey('Goal', on_delete=models.SET_NULL, null=True, blank=True)  
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        # Automatically update goal's current_amount if this is a savings transaction
+        if self.type == 'savings' and self.goal:
+            self.goal.current_amount += self.amount
+            self.goal.save()
+            
     def __str__(self):
         return f"{self.type} - {self.category} - {self.amount} on {self.date}"
 

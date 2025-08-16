@@ -2,7 +2,7 @@
 {% block content %}
 <section class="forms">
   <h2>Signup</h2>
-  <form method="post">
+  <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
     <div>
@@ -21,6 +21,30 @@
       {% endif %}
     </div>
 
+    <div>
+      {{ form.phone_number.label_tag }}
+      {{ form.phone_number }}
+      {% if form.phone_number.errors %}
+        <div class="error">{{ form.phone_number.errors }}</div>
+      {% endif %}
+    </div>
+
+    <div>
+      {{ form.risk_tolerance.label_tag }}
+      {{ form.risk_tolerance }}
+      {% if form.risk_tolerance.errors %}
+        <div class="error">{{ form.risk_tolerance.errors }}</div>
+      {% endif %}
+    </div>
+
+    <div>
+      {{ form.profile_picture.label_tag }}
+      {{ form.profile_picture }}
+      {% if form.profile_picture.errors %}
+        <div class="error">{{ form.profile_picture.errors }}</div>
+      {% endif %}
+    </div>
+    
     <div>
       {{ form.password1.label_tag }}
       {{ form.password1 }}
