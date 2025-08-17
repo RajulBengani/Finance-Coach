@@ -8,6 +8,10 @@ from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.decorators import login_required
 from django.db.models.functions import TruncDate
+from .recommendations import generate_savings_recommendation, calculate_tax_recommendation
+from .recommendations import generate_expense_recommendation, generate_category_expense_recommendation 
+from .recommendations import get_investment_opportunities
+from django.core.cache import cache
 # Create your views here.
 def login_view(request):
     if request.method == 'POST':
@@ -65,13 +69,13 @@ def dashboard(request):
             'percent': round(percent, 2)
     })
 
-    #Last 10 days transactions
+    # Last 30 days transactions
     today = timezone.now().date()
-    ten_days_ago = today - timedelta(days=9)
+    thirty_days_ago = today - timedelta(days=29)  # last 30 days including today
 
     # Group by date
     expenses_per_day = (
-        Transaction.objects.filter(user=user, type='expense', date__range=[ten_days_ago, today])
+        Transaction.objects.filter(user=user, type='expense', date__range=[thirty_days_ago, today])
         .values('date')
         .annotate(total=Sum('amount'))
     )
@@ -80,19 +84,47 @@ def dashboard(request):
     expenses_dict = {item['date']: item['total'] for item in expenses_per_day}
 
     # Build final list with 0s for missing days
-    expenses_last_10_days = []
-    for i in range(9, -1, -1):
+    expenses_last_30_days = []
+    for i in range(29, -1, -1):
         day = today - timedelta(days=i)
         total = expenses_dict.get(day, 0)
-        expenses_last_10_days.append({'date': day.strftime("%d %b"), 'total': total})
+        expenses_last_30_days.append({'date': day.strftime("%d %b"), 'total': total})
+
 
     #Get recommendations
-    from .recommendations import generate_savings_recommendation, calculate_tax_recommendation, generate_expense_recommendation, generate_category_expense_recommendation
+    
     savings_msg= generate_savings_recommendation(user)
     tax_msg = calculate_tax_recommendation(user)
     expense_msg = generate_expense_recommendation(user)
     category_expense_msgs=generate_category_expense_recommendation(user)
+    investment_opportunities = get_investment_opportunities(user)
 
+    # Cache investment opportunities to prevent repeated yfinance calls on refresh
+    cache_key = f"dash_invest_ops:{user.id}"
+    investment_opportunities = cache.get(cache_key)
+    if investment_opportunities is None:
+        investment_opportunities = get_investment_opportunities(user)
+        cache.set(cache_key, investment_opportunities, 300)  # 5 minutes
+
+    # Lightweight post-processing for UI badges (works even if some fields are None)
+    for inv in investment_opportunities if isinstance(investment_opportunities, list) else []:
+        r1m = inv.get("return_1m")
+        vol = inv.get("volatility_1m")
+        if isinstance(r1m, (int, float)) and r1m > 0.05:
+            inv["buy_signal"] = "✅ Potential Buy"
+        elif isinstance(r1m, (int, float)) and r1m < -0.05:
+            inv["buy_signal"] = "⚠️ Weak Momentum"
+        else:
+            inv["buy_signal"] = "⏳ Watchlist"
+        # Normalize % strings for template (no crash if None)
+        inv["return_1m_pct"] = f"{r1m*100:.1f}%" if isinstance(r1m, (int, float)) else "—"
+        r1y = inv.get("return_1y")
+        inv["return_1y_pct"] = f"{r1y*100:.1f}%" if isinstance(r1y, (int, float)) else "—"
+        inv["volatility_1m_pct"] = f"{vol*100:.1f}%" if isinstance(vol, (int, float)) else "—"
+        dy = inv.get("dividend_yield")
+        inv["dividend_yield_pct"] = f"{dy*100:.1f}%" if isinstance(dy, (int, float)) else "—"
+
+    adaptive_msg = _adaptive_advice(income, expenses, savings, investment_opportunities)
     context = {
         'name': user.username,
         'net_income': net_income,
@@ -100,7 +132,7 @@ def dashboard(request):
         'savings': savings,
         'category_expenses': list(category_expenses),
         'goals': goals,
-        'expenses_last_10_days': expenses_last_10_days,
+        'expenses_last_30_days': expenses_last_30_days,
         'goal_progress': goal_progress,
         'profile': profile,
         'savings_msg': savings_msg,
@@ -109,6 +141,8 @@ def dashboard(request):
         "category_expense_msgs": category_expense_msgs,
         'income':income,
         'warning_msg':warning_msg,
+        'investment_opportunities': investment_opportunities,
+        'adaptive_msg':adaptive_msg,
 
     }
     return render(request, 'coach/dashboard.html',context)
@@ -156,3 +190,32 @@ def edit_goal(request,goal_id):
         form = GoalForm(instance=goal)
     return render(request, 'coach/edit_goal.html', {'form': form, 'goal': goal})
 
+def _adaptive_advice(income, expenses, savings, investments):
+    """
+    Tiny rule-based adaptive coach message based on user's cashflows and current recs.
+    Non-invasive and requires no DB changes.
+    """
+    try:
+        income_f = float(income)
+        expenses_f = float(expenses)
+        savings_f = float(savings)
+    except Exception:
+        income_f = expenses_f = savings_f = 0.0
+
+    # Safely detect any high-vol items in current recs
+    high_vol = False
+    for inv in investments or []:
+        vol = inv.get("volatility_1m")
+        if isinstance(vol, (int, float)) and vol >= 0.02:
+            high_vol = True
+            break
+
+    if income_f == 0:
+        return "Add at least one income entry to unlock personalized investing advice."
+    if expenses_f > income_f * 0.9:
+        return "⚠️ Your expenses are ~90% of income. Reduce spending before adding higher-risk investments."
+    if savings_f < income_f * 0.1:
+        return "💡 Boost savings (≥10% of income) to create a safety buffer before taking market risk."
+    if high_vol:
+        return "⚠️ Several suggestions are volatile. Balance with ETFs or bonds for stability."
+    return "✅ Good balance! You can explore more opportunities that fit your horizon and risk."

@@ -1,134 +1,211 @@
 {% extends 'coach/layout.html' %}
 {% load static %}
 {% block content %}
-<h2>Hey {{name}}! This is your Financial Coach</h2>
-<div class="profile-section">
-  {% if profile and profile.profile_picture %}
-    <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" 
-         style="width:120px; height:120px; border-radius:50%; object-fit:cover;">
-  {% else %}
-    <img src="{% static 'images/default-profile.png' %}" alt="Default Profile Picture" 
-         style="width:120px; height:120px; border-radius:50%; object-fit:cover;">
-  {% endif %}
-</div>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<div class="cards">
-    <div class="card">
-        <h3>Income, Expense and Savings Chart</h3>
+<div class="container my-4">
+  <h2 class="mb-4">👋 Hey {{name}}, welcome back to your <span class="text-primary">Financial Coach</span></h2>
+
+  <!-- Profile Section -->
+  <div class="d-flex align-items-center mb-4">
+    {% if profile and profile.profile_picture %}
+      <img src="{{ profile.profile_picture.url }}" alt="Profile Picture"
+           class="rounded-circle me-3" style="width:80px; height:80px; object-fit:cover;">
+    {% else %}
+      <img src="{% static 'images/default-profile.png' %}" alt="Default Profile Picture"
+           class="rounded-circle me-3" style="width:80px; height:80px; object-fit:cover;">
+    {% endif %}
+    <div>
+      <p class="mb-0 text-muted">Your personalized financial dashboard</p>
+    </div>
+  </div>
+
+  <!-- Row of Charts -->
+  <div class="row g-4">
+    <div class="col-md-6">
+      <div class="card shadow-sm p-3">
+        <h5 class="card-title">💵 Income vs Expense vs Savings</h5>
         <canvas id="summaryChart"></canvas>
-        <p>Available Balance: 
-            {% if net_income < 0 %}
-                <span style="color:red;">{{ net_income }}</span> (Overbudget!)
-            {% else %}
-                {{ net_income }}
-            {% endif %}
+        <p class="mt-3">Available Balance:
+          {% if net_income < 0 %}
+            <span class="text-danger fw-bold">{{ net_income }}</span> (Overbudget!)
+          {% else %}
+            <span class="text-success fw-bold">{{ net_income }}</span>
+          {% endif %}
         </p>
         {% if warning_msg %}
-            <p style="color:red;">{{ warning_msg }}</p>
+          <p class="text-danger small">{{ warning_msg }}</p>
         {% endif %}
+      </div>
     </div>
-    <div class="card">
-        <h3>Category-Wise Expense only chart</h3>
+
+    <div class="col-md-6">
+      <div class="card shadow-sm p-3">
+        <h5 class="card-title">📊 Category-Wise Expenses</h5>
         <canvas id="categoryChart"></canvas>
+      </div>
     </div>
-    <div class="card">
-        <h3>Goal Progress</h3>
-        {% for g in goal_progress %}
-         <div style="margin-bottom: 15px;">
-            <strong><a href="{% url 'edit_goal' g.id%}">{{g.name}}</a></strong> ({{g.current}} / {{g.target}})
-            <div style="background:#eee; border-radius:10px; overflow:hidden; height:20px; margin-top:5px;">
-                <div style="background:#2196F3; height:100%; width: {{g.percent}}%;"></div>
-            </div>
-            <small>{{g.percent}}%</small>
+  </div>
+
+  <!-- Goal Progress -->
+  <div class="card shadow-sm p-3 my-4">
+    <h5 class="card-title">🎯 Goal Progress</h5>
+    {% for g in goal_progress %}
+      <div class="mb-3">
+        <strong><a href="{% url 'edit_goal' g.id %}" class="text-decoration-none">{{g.name}}</a></strong>
+        <small class="text-muted"> ({{g.current}} / {{g.target}})</small>
+        <div class="progress" style="height:20px;">
+          <div class="progress-bar bg-primary" role="progressbar" 
+               style="width: {{g.percent}}%;" 
+               aria-valuenow="{{g.percent}}" aria-valuemin="0" aria-valuemax="100">
+            {{g.percent}}%
+          </div>
         </div>
+      </div>
     {% endfor %}
+  </div>
+
+  <!-- Expenses Last 30 Days -->
+  <div class="card shadow-sm p-3 my-4">
+    <h5 class="card-title">📉 Expenses (Last 10 Days)</h5>
+    <canvas id="dailyChart"></canvas>
+  </div>
+
+  <!-- Personalized Recommendations -->
+  <div class="card shadow-sm p-3 my-4">
+    <h5 class="card-title">💡 Personalized Recommendations</h5>
+    <div class="mt-2">
+      <span class="fw-bold">💰 Savings:</span> {{ savings_msg }}
     </div>
-    <div class="card">
-        <h3>graph of expenses of last 10 days</h3>
-        <canvas id="dailyChart"></canvas>
+    <div class="mt-2">
+      <span class="fw-bold">🧾 Tax:</span> {{ tax_msg }}
     </div>
-    <div class="card">
-        <h3>Personalised Recommendations for savings, tax and expenses</h3>
-        <div style="margin-top:10px;">
-            <strong>💰 Savings Advice:</strong>
-            <p>{{ savings_msg }}</p>
+    <div class="mt-2">
+      <span class="fw-bold">💸 Expenses:</span> {{ expense_msg }}
+    </div>
+    <div class="mt-2">
+      <span class="fw-bold">📊 Category-wise Expense Tips:</span>
+      <ul class="list-unstyled mt-2">
+        {% for msg in category_expense_msgs %}
+          <li>✔️ {{ msg }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <!-- Investment Opportunities -->
+  <div class="card shadow-sm p-3 my-4">
+    <h5 class="card-title">📈 Market Insights & Opportunities</h5>
+    {% if adaptive_msg %}
+      <p class="text-muted small">🧠 {{ adaptive_msg }}</p>
+    {% endif %}
+    <div class="list-group">
+      {% for inv in investment_opportunities %}
+        <div class="list-group-item">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <strong>{{ inv.name }}</strong> ({{ inv.ticker }}) — ₹ {{ inv.price_inr }}
+              <small class="text-muted">(~{{ inv.price_usd }} USD)</small>
+              <div class="small text-muted">
+                Risk: {{ inv.risk }}{% if inv.horizon %} | Horizon: {{ inv.horizon }}{% endif %}
+              </div>
+            </div>
+            {% if inv.trend %}
+              <span class="badge bg-info">{{ inv.trend }}</span>
+            {% endif %}
+            {% if inv.buy_signal %}
+              <span class="badge bg-success">{{ inv.buy_signal }}</span>
+            {% endif %}
+          </div>
+          <div class="small text-muted mt-1">
+            1M: {{ inv.return_1m_pct|default:"—" }} | 
+            1Y: {{ inv.return_1y_pct|default:"—" }} | 
+            Vol(1M): {{ inv.volatility_1m_pct|default:"—" }} | 
+            DivYld: {{ inv.dividend_yield_pct|default:"—" }}
+          </div>
         </div>
-        <div style="margin-top:10px;">
-            <strong>🧾 Tax Advice:</strong>
-            <p>{{ tax_msg }}</p>
-        </div>
-        <div style="margin-top:10px;">
-            <strong>💸 Expense Advice:</strong>
-            <p>{{ expense_msg }}</p>
-        </div>
-        <div style="margin-top:10px;">
-        <strong>📊 Category-wise Expense Advice:</strong>
-        <ul>
-            {% for msg in category_expense_msgs %}
-                <li>{{ msg }}</li>
-            {% endfor %}
-        </ul>
-        </div> 
+      {% empty %}
+        <p class="text-muted">No recommendations available</p>
+      {% endfor %}
     </div>
-    <div class="card">
-        <h3>Fin NEWS, recommendations from stock market and mutual fund</h3>
-    </div>
+  </div>
 </div>
 
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    //Income, Expense, Savings
-    new Chart(document.getElementById('summaryChart'), {
-        type: 'doughnut',
-        data: {
-            labels: ['Remaining Income', 'Expense(s)', 'Saving(s)'],
-            datasets: [{
-                data: [{{net_income}}, {{expenses}}, {{savings}}],
-                backgroundColor: ['#4CAF50', '#F44336', '#2196F3']
-            }]
+  // Income, Expense, Savings
+  new Chart(document.getElementById('summaryChart'), {
+      type: 'doughnut',
+      data: {
+          labels: ['Remaining Income', 'Expense(s)', 'Saving(s)'],
+          datasets: [{
+              data: [{{net_income}}, {{expenses}}, {{savings}}],
+              backgroundColor: ['#4CAF50', '#F44336', '#2196F3']
+          }]
+      }
+  });
+
+  // Category-wise Expense
+  new Chart(document.getElementById('categoryChart'), {
+      type: 'pie',
+      data: {
+          labels: [{% for c in category_expenses %}'{{c.category__name}}',{% endfor %}],
+          datasets: [{
+              data: [{% for c in category_expenses %}{{c.total}},{% endfor %}],
+              backgroundColor: ['#FF9800', '#9C27B0', '#03A9F4', '#E91E63', '#8BC34A']
+          }]
+      }
+  });
+// Last 30 days expenses
+new Chart(document.getElementById('dailyChart'), {
+    type: 'line',
+    data: {
+        labels: [{% for e in expenses_last_30_days %}"{{ e.date }}",{% endfor %}],
+        datasets: [{
+            label: 'Expenses',
+            data: [{% for e in expenses_last_30_days %}{{ e.total }},{% endfor %}],
+            borderColor: '#FF5722',
+            backgroundColor: 'rgba(255, 87, 34, 0.1)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 4,
+            pointBackgroundColor: '#FF5722'
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top'
+            },
+            tooltip: {
+                mode: 'index',
+                intersect: false
+            }
         },
-    });
-    //Category-wise Expense
-    new Chart(document.getElementById('categoryChart'), {
-        type: 'pie',
-        data: {
-            labels: [{% for c in category_expenses %}'{{c.category__name}}',{% endfor %}],
-            datasets: [{
-                data: [{% for c in category_expenses %}{{c.total}},{% endfor %}],
-                backgroundColor: ['#FF9800', '#9C27B0', '#03A9F4', '#E91E63', '#8BC34A']
-            }]
-        }
-    });
-    //Goal Progress
-    new Chart(document.getElementById('goalChart'), {
-        type: 'bar',
-        data: {
-            labels: [{% for g in goals %}'{{g.name}}',{% endfor %}],
-            datasets: [{
-                label: 'Current',
-                data: [{% for g in goals %}{{g.current_amount}},{% endfor %}],
-                backgroundColor: '#2196F3'
-            }, {
-                label: 'Target',
-                data: [{% for g in goals %}{{g.target_amount}},{% endfor %}],
-                backgroundColor: '#F44336'
-            }]
+        interaction: {
+            mode: 'nearest',
+            axis: 'x',
+            intersect: false
         },
-        options: {responsive: true, scales: {y: {beginAtZero: true}}}
-    });
-    // Last 10 days expenses
-    new Chart(document.getElementById('dailyChart'), {
-        type: 'line',
-        data: {
-            labels: [{% for e in expenses_last_10_days %}'{{e.date}}',{% endfor %}],
-            datasets: [{
-                label: 'Expenses',
-                data: [{% for e in expenses_last_10_days %}{{e.total}},{% endfor %}],
-                borderColor: '#FF5722',
-                fill: false,
-                tension: 0.3
-            }]
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Amount (₹)'
+                }
+            },
+            x: {
+                title: {
+                    display: true,
+                    text: 'Date'
+                }
+            }
         }
-    });
+    }
+});
 </script>
-{% endblock%}
+{% endblock %}

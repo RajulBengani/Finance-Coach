@@ -1,8 +1,9 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
-from django.db.models.signals import pre_save, post_save
+from django.db.models.signals import post_save, pre_save, post_delete
 from django.dispatch import receiver
+
 class UserProfile(models.Model):
     RISK_TYPES=[
         ('low', 'Low Risk'),
@@ -19,7 +20,6 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.user.username
     
-
 class Transaction(models.Model):
     TYPE_CHOICES = [
         ('income', 'Income'),
@@ -32,16 +32,8 @@ class Transaction(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateField(default=timezone.now)
     description = models.TextField(blank=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     goal = models.ForeignKey('Goal', on_delete=models.SET_NULL, null=True, blank=True)  
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-        # Automatically update goal's current_amount if this is a savings transaction
-        if self.type == 'savings' and self.goal:
-            self.goal.current_amount += self.amount
-            self.goal.save()
             
     def __str__(self):
         return f"{self.type} - {self.category} - {self.amount} on {self.date}"
@@ -57,39 +49,65 @@ class Goal(models.Model):
     target_amount = models.DecimalField(max_digits=10, decimal_places=2)
     current_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     target_date = models.DateField()
-    user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def save(self, *args, **kwargs):
+        # Optional validation: prevent exceeding target
+        if self.current_amount > self.target_amount:
+            raise ValueError("Current amount cannot exceed target amount")
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
 
-@receiver(pre_save, sender=Goal)  
-def track_goal_progress(sender, instance, **kwargs):
-    if instance.pk:
-        old_instance=Goal.objects.get(pk=instance.pk)
-        instance._old_current_amount = old_instance.current_amount
+@receiver(pre_save, sender=Transaction)
+def track_old_transaction(sender, instance, **kwargs):
+    """
+    Before updating a Transaction, keep track of its old state.
+    """
+    if instance.pk:  # Only for updates
+        old_instance = Transaction.objects.get(pk=instance.pk)
+        instance._old_amount = old_instance.amount
+        instance._old_type = old_instance.type
+        instance._old_goal = old_instance.goal
     else:
-        instance._old_current_amount = 0
+        instance._old_amount = None
+        instance._old_type = None
+        instance._old_goal = None
 
-@receiver(post_save, sender=Goal)
-def add_savings_transactions(sender, instance, created, **kwargs):
-    from .models import Transaction, Category
 
-    #Ensure "Goal Savinge" category exists
-    category, _ = Category.objects.get_or_create(name="Goal Savings")
+@receiver(post_save, sender=Transaction)
+def update_goal_progress_on_save(sender, instance, created, **kwargs):
+    """
+    Adjust goal amounts on transaction create/update.
+    """
+    # Case 1: New savings transaction
+    if created and instance.type == 'savings' and instance.goal:
+        instance.goal.current_amount += instance.amount
+        instance.goal.save()
 
-    # If this is an update to an existing goal
-    old_amount= getattr(instance, '_old_current_amount', 0)
-    if instance.current_amount > old_amount:
-        # Calculate the difference
-        difference = instance.current_amount - old_amount
+    # Case 2: Updating an existing transaction
+    elif not created:
+        old_amount = instance._old_amount
+        old_type = instance._old_type
+        old_goal = instance._old_goal
 
-        # Create a new savings transaction for the savings
-        Transaction.objects.create(
-            type='savings',
-            category=category,
-            amount=difference,
-            date=timezone.now(),
-            description=f"Goal Savings for {instance.name}",
-            user=instance.user
-        )
-    
+        # If it was savings and linked to a goal before → revert the old value
+        if old_type == 'savings' and old_goal:
+            old_goal.current_amount -= old_amount
+            old_goal.save()
+
+        # If it is savings now → add the new value
+        if instance.type == 'savings' and instance.goal:
+            instance.goal.current_amount += instance.amount
+            instance.goal.save()
+
+
+@receiver(post_delete, sender=Transaction)
+def update_goal_progress_on_delete(sender, instance, **kwargs):
+    """
+    Adjust goal when a savings transaction is deleted.
+    """
+    if instance.type == 'savings' and instance.goal:
+        instance.goal.current_amount -= instance.amount
+        instance.goal.save()
