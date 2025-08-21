@@ -1,14 +1,90 @@
 {% extends 'coach/base.html' %}
 {% block content %}
-<section class="forms">
-<h2>Login</h2>
-<form method="post">
-  {% csrf_token %}
-  <input type="text" name="username" placeholder="Username" required >
-  <input type="password" name="password" placeholder="Password" required>
-  <button type="submit">Login</button>
-  {% if error %}<p style="color:red;">{{ error }}</p>{% endif %}
-  <p>Don't have an account? <a href="{% url 'signup' %}">Sign up here</a>.</p>
-</form>
-</section>
+<div class="edit-transaction-container">
+  <h2 class="title">🔑 Login</h2>
+  <p class="subtitle">Enter your credentials to access your account</p>
+
+  <form method="post" class="transaction-form">
+    {% csrf_token %}
+    <div>
+      <input type="text" name="username" placeholder="Username" required>
+    </div>
+    <div>
+      <input type="password" name="password" placeholder="Password" required>
+    </div>
+
+    {% if error %}
+      <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-save">✅ Login</button>
+      <a href="{% url 'signup' %}" class="btn btn-cancel">📝 Signup</a>
+    </div>
+  </form>
+</div>
+
+<style>
+.edit-transaction-container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 25px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.title {
+  text-align: center;
+  margin-bottom: 10px;
+  color: #333;
+}
+.subtitle {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #555;
+}
+.transaction-form div {
+  margin-bottom: 15px;
+}
+.transaction-form input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+.form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+.btn {
+  padding: 8px 15px;
+  border-radius: 6px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+.btn-save {
+  background: #e6ffed;
+  color: #057a32;
+}
+.btn-cancel {
+  background: #ffecec;
+  color: #c62828;
+}
+.btn-save:hover {
+  background: #ccffd9;
+}
+.btn-cancel:hover {
+  background: #ffcccc;
+}
+.error {
+  color: #c62828;
+  font-size: 0.9em;
+  margin-top: 3px;
+  text-align: center;
+}
+</style>
 {% endblock %}

@@ -1,40 +1,72 @@
 {% extends 'coach/base.html' %}
 {% block content %}
-<h2>Add New Transaction</h2>
-<form method="post">
+<div class="edit-transaction-container">
+  <h2 class="title">➕ Add New Transaction</h2>
+
+  <form method="post" class="transaction-form">
     {% csrf_token %}
 
     <!-- Transaction Type -->
-    <label for="id_type">Transaction Type:</label>
-    <select name="type" id="id_type">
-        <option value="income" {% if form.type.value == 'income' %}selected{% endif %}>Income</option>
-        <option value="expense" {% if form.type.value == 'expense' %}selected{% endif %}>Expense</option>
-        <option value="savings" {% if form.type.value == 'savings' %}selected{% endif %}>Savings</option>
-    </select>
+    <div>
+      <label for="id_type">Transaction Type:</label>
+      <select name="type" id="id_type">
+          <option value="income" {% if form.type.value == 'income' %}selected{% endif %}>Income</option>
+          <option value="expense" {% if form.type.value == 'expense' %}selected{% endif %}>Expense</option>
+          <option value="savings" {% if form.type.value == 'savings' %}selected{% endif %}>Savings</option>
+      </select>
+    </div>
 
     <!-- Goal (shown only if type = savings) -->
     <div id="goal-field" style="display:none;">
-        {{ form.goal.label_tag }}
-        {{ form.goal }}
+      {{ form.goal.label_tag }}
+      {{ form.goal }}
+      {% if form.goal.errors %}
+        <div class="error">{{ form.goal.errors }}</div>
+      {% endif %}
     </div>
 
-    <!-- Other fields -->
-    {{ form.category.label_tag }}
-    {{ form.category }}
-    
-    {{ form.amount.label_tag }}
-    {{ form.amount }}
-    
-    {{ form.date.label_tag }}
-    {{ form.date }}
-    
-    {{ form.description.label_tag }}
-    {{ form.description }}
+    <!-- Category -->
+    <div>
+      {{ form.category.label_tag }}
+      {{ form.category }}
+      {% if form.category.errors %}
+        <div class="error">{{ form.category.errors }}</div>
+      {% endif %}
+    </div>
 
-    <button type="submit">Add Transaction</button>
-</form>
+    <!-- Amount -->
+    <div>
+      {{ form.amount.label_tag }}
+      {{ form.amount }}
+      {% if form.amount.errors %}
+        <div class="error">{{ form.amount.errors }}</div>
+      {% endif %}
+    </div>
 
-<a href="{% url 'dashboard' %}">Go to Dashboard</a>
+    <!-- Date -->
+    <div>
+      {{ form.date.label_tag }}
+      {{ form.date }}
+      {% if form.date.errors %}
+        <div class="error">{{ form.date.errors }}</div>
+      {% endif %}
+    </div>
+
+    <!-- Description -->
+    <div>
+      {{ form.description.label_tag }}
+      {{ form.description }}
+      {% if form.description.errors %}
+        <div class="error">{{ form.description.errors }}</div>
+      {% endif %}
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-save">💾 Add Transaction</button>
+      <a href="{% url 'dashboard' %}" class="btn btn-cancel">🔙 Dashboard</a>
+    </div>
+  </form>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -55,4 +87,65 @@ document.addEventListener('DOMContentLoaded', function() {
     toggleGoal();
 });
 </script>
+
+<style>
+/* Reuse the same container & form styles as other pages */
+.edit-transaction-container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 25px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.title {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #333;
+}
+.transaction-form div {
+  margin-bottom: 15px;
+}
+.transaction-form input,
+.transaction-form select,
+.transaction-form textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+.form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+.btn {
+  padding: 8px 15px;
+  border-radius: 6px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+.btn-save {
+  background: #e6ffed;
+  color: #057a32;
+}
+.btn-cancel {
+  background: #ffecec;
+  color: #c62828;
+}
+.btn-save:hover {
+  background: #ccffd9;
+}
+.btn-cancel:hover {
+  background: #ffcccc;
+}
+.error {
+  color: #c62828;
+  font-size: 0.9em;
+  margin-top: 3px;
+}
+</style>
 {% endblock %}

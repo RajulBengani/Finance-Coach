@@ -1,0 +1,158 @@
+{% extends "coach/base.html" %}
+{% block content %}
+<div class="transactions-container">
+  <a href="{% url 'dashboard' %}" class="btn btn-cancel">🔙 Dashboard</a>
+  <h2 class="title">📒 Transactions</h2>
+  
+  <!-- Filters -->
+  <form method="get" class="filters">
+    <label>
+      Type:
+      <select name="type" onchange="this.form.submit()">
+        <option value="">All</option>
+        <option value="income" {% if filter_type == "income" %}selected{% endif %}>Income</option>
+        <option value="expense" {% if filter_type == "expense" %}selected{% endif %}>Expense</option>
+        <option value="savings" {% if filter_type == "savings" %}selected{% endif %}>Savings</option>
+      </select>
+    </label>
+
+    <label>
+      Category:
+      <select name="category" onchange="this.form.submit()">
+        <option value="">All</option>
+        {% for cat in categories %}
+          <option value="{{ cat.id }}" {% if filter_category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </form>
+
+  <!-- Totals -->
+  <div class="totals">
+    <div class="card income">💰 Income: {{ total_income }}</div>
+    <div class="card expense">💸 Expenses: {{ total_expenses }}</div>
+    <div class="card savings">🏦 Savings: {{ total_savings }}</div>
+  </div>
+
+  <!-- Transactions Table -->
+  <table class="transactions-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Type</th>
+        <th>Category</th>
+        <th>Description</th>
+        <th>Amount</th>
+        <th>Edit</th>
+        <th>Delete</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for tx in transactions %}
+        <tr>
+          <td>{{ tx.date }}</td>
+          <td>{{ tx.type|title }}</td>
+          <td>{{ tx.category.name }}</td>
+          <td>{{ tx.description|default:"—" }}</td>
+          <td>{{ tx.amount }}</td>
+          <td>
+            <a href="{% url 'edit_transaction' tx.id %}" class="btn btn-edit">✏️ Edit</a>
+          </td>
+          <td>
+            <form action="{% url 'delete_transaction' tx.id %}" method="post" onsubmit="return confirm('Are you sure you want to delete this transaction?');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-delete">🗑️ Delete</button>
+            </form>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="7" class="no-data">No transactions found.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<style>
+.transactions-container {
+  max-width: 950px;
+  margin: 30px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.title {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+.filters {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 25px;
+}
+.filters select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+.totals {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+}
+.card {
+  padding: 10px 15px;
+  border-radius: 10px;
+  font-weight: bold;
+}
+.card.income { background: #e6ffed; color: #057a32; }
+.card.expense { background: #ffecec; color: #c62828; }
+.card.savings { background: #e6f0ff; color: #1a56db; }
+.transactions-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.transactions-table th, .transactions-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+}
+.transactions-table th {
+  background: #f4f4f4;
+}
+.no-data {
+  text-align: center;
+  color: #777;
+  font-style: italic;
+}
+.btn {
+  padding: 5px 10px;
+  border-radius: 6px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+}
+.btn-edit {
+  background: #e6f7ff;
+  color: #0077cc;
+}
+.btn-delete {
+  background: #ffecec;
+  color: #c62828;
+}
+.btn-edit:hover {
+  background: #cceeff;
+}
+.btn-delete:hover {
+  background: #ffcccc;
+}
+.btn-cancel {
+  background: #ffecec;
+  color: #c62828;
+}
+</style>
+{% endblock %}

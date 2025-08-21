@@ -1,15 +1,17 @@
-{% extends 'coach/base.html' %}
+{% extends "coach/base.html" %}
 {% block content %}
 <div class="edit-transaction-container">
-  <h2 class="title">🎯 Add New Goal</h2>
+<a href="{% url 'dashboard' %}">Go to Dashboard</a>
+  <h2 class="title">✏️ Edit Transaction</h2>
+  <p class="subtitle">Updating transaction: <strong>{{ transaction.description|default:"(No description)" }}</strong></p>
 
   <form method="post" class="transaction-form">
     {% csrf_token %}
     {{ form.as_p }}
 
     <div class="form-actions">
-      <button type="submit" class="btn btn-save">💾 Add Goal</button>
-      <a href="{% url 'dashboard' %}" class="btn btn-cancel">🔙 Dashboard</a>
+      <button type="submit" class="btn btn-save">💾 Save Changes</button>
+      <a href="{% url 'view_transactions' %}" class="btn btn-cancel">❌ Cancel</a>
     </div>
   </form>
 </div>
@@ -25,8 +27,13 @@
 }
 .title {
   text-align: center;
-  margin-bottom: 25px;
+  margin-bottom: 10px;
   color: #333;
+}
+.subtitle {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #555;
 }
 .transaction-form p {
   margin-bottom: 15px;
@@ -66,11 +73,6 @@
 }
 .btn-cancel:hover {
   background: #ffcccc;
-}
-.error {
-  color: #c62828;
-  font-size: 0.9em;
-  margin-top: 3px;
 }
 </style>
 {% endblock %}

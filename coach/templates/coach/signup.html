@@ -1,8 +1,10 @@
 {% extends 'coach/base.html' %}
 {% block content %}
-<section class="forms">
-  <h2>Signup</h2>
-  <form method="post" enctype="multipart/form-data">
+<div class="edit-transaction-container">
+  <h2 class="title">📝 Signup</h2>
+  <p class="subtitle">Create your new account</p>
+
+  <form method="post" enctype="multipart/form-data" class="transaction-form">
     {% csrf_token %}
 
     <div>
@@ -44,7 +46,7 @@
         <div class="error">{{ form.profile_picture.errors }}</div>
       {% endif %}
     </div>
-    
+
     <div>
       {{ form.password1.label_tag }}
       {{ form.password1 }}
@@ -61,8 +63,75 @@
       {% endif %}
     </div>
 
-    <button type="submit">Signup</button>
-    <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-save">✅ Signup</button>
+      <a href="{% url 'login' %}" class="btn btn-cancel">🔙 Login</a>
+    </div>
   </form>
-</section>
+</div>
+
+<style>
+.edit-transaction-container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 25px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.title {
+  text-align: center;
+  margin-bottom: 10px;
+  color: #333;
+}
+.subtitle {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #555;
+}
+.transaction-form div {
+  margin-bottom: 15px;
+}
+.transaction-form input,
+.transaction-form select,
+.transaction-form textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+.form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+.btn {
+  padding: 8px 15px;
+  border-radius: 6px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+.btn-save {
+  background: #e6ffed;
+  color: #057a32;
+}
+.btn-cancel {
+  background: #ffecec;
+  color: #c62828;
+}
+.btn-save:hover {
+  background: #ccffd9;
+}
+.btn-cancel:hover {
+  background: #ffcccc;
+}
+.error {
+  color: #c62828;
+  font-size: 0.9em;
+  margin-top: 3px;
+}
+</style>
 {% endblock %}

@@ -12,6 +12,7 @@ from .recommendations import generate_savings_recommendation, calculate_tax_reco
 from .recommendations import generate_expense_recommendation, generate_category_expense_recommendation 
 from .recommendations import get_investment_opportunities
 from django.core.cache import cache
+from .services import dashboard_service, advice_service
 # Create your views here.
 def login_view(request):
     if request.method == 'POST':
@@ -40,112 +41,56 @@ def signup(request):
 
 @login_required
 def dashboard(request):
-    user=request.user
-    profile=UserProfile.objects.filter(user=user).first()
-
-    #income, expense, and savings totals
-    income= Transaction.objects.filter(user=user, type='income').aggregate(Sum('amount'))['amount__sum'] or 0
-    expenses = Transaction.objects.filter(user=user, type='expense').aggregate(Sum('amount'))['amount__sum'] or 0
-    savings=Transaction.objects.filter(user=user, type='savings').aggregate(Sum('amount'))['amount__sum'] or 0
-    net_income = income - (expenses + savings)
-    warning_msg=""
-    if net_income < 0:
-        warning_msg="⚠️ Your expenses and savings exceed your income! Consider reducing them."
-
-
-    #Category-wise expense
-    category_expenses = Transaction.objects.filter(user=user, type='expense').values('category__name').annotate(total=Sum('amount'))
-
-    #Goals
-    goals = Goal.objects.filter(user=user)
-    goal_progress = []
-    for g in goals:
-        percent = (g.current_amount / g.target_amount * 100) if g.target_amount > 0 else 0
-        goal_progress.append({
-            'id': g.id,
-            'name': g.name,
-            'current': g.current_amount,
-            'target': g.target_amount,
-            'percent': round(percent, 2)
-    })
-
-    # Last 30 days transactions
-    today = timezone.now().date()
-    thirty_days_ago = today - timedelta(days=29)  # last 30 days including today
-
-    # Group by date
-    expenses_per_day = (
-        Transaction.objects.filter(user=user, type='expense', date__range=[thirty_days_ago, today])
-        .values('date')
-        .annotate(total=Sum('amount'))
-    )
-
-    # Convert to dict {date: total}
-    expenses_dict = {item['date']: item['total'] for item in expenses_per_day}
-
-    # Build final list with 0s for missing days
-    expenses_last_30_days = []
-    for i in range(29, -1, -1):
-        day = today - timedelta(days=i)
-        total = expenses_dict.get(day, 0)
-        expenses_last_30_days.append({'date': day.strftime("%d %b"), 'total': total})
-
-
-    #Get recommendations
+    user = request.user
     
-    savings_msg= generate_savings_recommendation(user)
+    # --- Business Logic via Services ---
+    income, expenses, savings, net_income = dashboard_service.get_income_expenses_savings(user)
+    category_expenses = dashboard_service.get_category_expenses(user)
+    goals, goal_progress = dashboard_service.get_goal_progress(user)
+    expenses_last_30_days = dashboard_service.get_expenses_last_30_days(user)
+    profile = dashboard_service.get_profile(user)
+
+    warning_msg = "⚠️ Expenses and savings exceed your income!" if net_income < 0 else ""
+
+    # --- Recommendations ---
+    savings_msg = generate_savings_recommendation(user)
     tax_msg = calculate_tax_recommendation(user)
     expense_msg = generate_expense_recommendation(user)
-    category_expense_msgs=generate_category_expense_recommendation(user)
-    investment_opportunities = get_investment_opportunities(user)
+    category_expense_msgs = generate_category_expense_recommendation(user)
 
-    # Cache investment opportunities to prevent repeated yfinance calls on refresh
+    # Cached investment opportunities
     cache_key = f"dash_invest_ops:{user.id}"
     investment_opportunities = cache.get(cache_key)
     if investment_opportunities is None:
         investment_opportunities = get_investment_opportunities(user)
-        cache.set(cache_key, investment_opportunities, 300)  # 5 minutes
+        cache.set(cache_key, investment_opportunities, 300)
 
-    # Lightweight post-processing for UI badges (works even if some fields are None)
-    for inv in investment_opportunities if isinstance(investment_opportunities, list) else []:
-        r1m = inv.get("return_1m")
-        vol = inv.get("volatility_1m")
-        if isinstance(r1m, (int, float)) and r1m > 0.05:
-            inv["buy_signal"] = "✅ Potential Buy"
-        elif isinstance(r1m, (int, float)) and r1m < -0.05:
-            inv["buy_signal"] = "⚠️ Weak Momentum"
-        else:
-            inv["buy_signal"] = "⏳ Watchlist"
-        # Normalize % strings for template (no crash if None)
-        inv["return_1m_pct"] = f"{r1m*100:.1f}%" if isinstance(r1m, (int, float)) else "—"
-        r1y = inv.get("return_1y")
-        inv["return_1y_pct"] = f"{r1y*100:.1f}%" if isinstance(r1y, (int, float)) else "—"
-        inv["volatility_1m_pct"] = f"{vol*100:.1f}%" if isinstance(vol, (int, float)) else "—"
-        dy = inv.get("dividend_yield")
-        inv["dividend_yield_pct"] = f"{dy*100:.1f}%" if isinstance(dy, (int, float)) else "—"
+    adaptive_msg = advice_service.adaptive_advice(income, expenses, savings, investment_opportunities)
 
-    adaptive_msg = _adaptive_advice(income, expenses, savings, investment_opportunities)
+   
+    # --- Context ---
     context = {
-        'name': user.username,
-        'net_income': net_income,
-        'expenses': expenses,
-        'savings': savings,
-        'category_expenses': list(category_expenses),
-        'goals': goals,
-        'expenses_last_30_days': expenses_last_30_days,
-        'goal_progress': goal_progress,
-        'profile': profile,
-        'savings_msg': savings_msg,
-        'tax_msg': tax_msg,
-        'expense_msg': expense_msg,
+        "name": user.username,
+        "profile": profile,
+        "income": income,
+        "expenses": expenses,
+        "savings": savings,
+        "net_income": net_income,
+        "warning_msg": warning_msg,
+        "category_expenses": list(category_expenses),
+        "goals": goals,
+        "goal_progress": goal_progress,
+        "expenses_last_30_days": expenses_last_30_days,
+        "savings_msg": savings_msg,
+        "tax_msg": tax_msg,
+        "expense_msg": expense_msg,
         "category_expense_msgs": category_expense_msgs,
-        'income':income,
-        'warning_msg':warning_msg,
-        'investment_opportunities': investment_opportunities,
-        'adaptive_msg':adaptive_msg,
-
+        "investment_opportunities": investment_opportunities,
+        "adaptive_msg": adaptive_msg,
+        
     }
-    return render(request, 'coach/dashboard.html',context)
+    return render(request, "coach/dashboard.html", context)
+
 
 @login_required
 def logout_view(request):
@@ -164,6 +109,40 @@ def add_transaction(request):
     else:
         form = TransactionForm(user=request.user)
     return render(request, 'coach/add_transaction.html', {'form': form})
+
+@login_required
+def view_transactions(request):
+    user = request.user
+
+    # Fetch all transactions for the user
+    transactions = Transaction.objects.filter(user=user).select_related("category").order_by("-date")
+
+    # Optional filtering by type (income / expense / savings)
+    tx_type = request.GET.get("type")
+    if tx_type in ["income", "expense", "savings"]:
+        transactions = transactions.filter(type=tx_type)
+
+    # Optional filtering by category
+    category_id = request.GET.get("category")
+    if category_id:
+        transactions = transactions.filter(category_id=category_id)
+
+    # Aggregates for quick totals
+    total_income = transactions.filter(type="income").aggregate(total=Sum("amount"))["total"] or 0
+    total_expenses = transactions.filter(type="expense").aggregate(total=Sum("amount"))["total"] or 0
+    total_savings = transactions.filter(type="savings").aggregate(total=Sum("amount"))["total"] or 0
+
+    context = {
+        "transactions": transactions,
+        "total_income": total_income,
+        "total_expenses": total_expenses,
+        "total_savings": total_savings,
+        "filter_type": tx_type,
+        "filter_category": category_id,
+        "categories": Category.objects.all()  # for dropdown filters
+    }
+
+    return render(request, "coach/view_transactions.html", context)
 
 @login_required
 def add_goal(request):
@@ -191,6 +170,7 @@ def edit_goal(request,goal_id):
     return render(request, 'coach/edit_goal.html', {'form': form, 'goal': goal})
 
 def _adaptive_advice(income, expenses, savings, investments):
+
     """
     Tiny rule-based adaptive coach message based on user's cashflows and current recs.
     Non-invasive and requires no DB changes.
@@ -219,3 +199,27 @@ def _adaptive_advice(income, expenses, savings, investments):
     if high_vol:
         return "⚠️ Several suggestions are volatile. Balance with ETFs or bonds for stability."
     return "✅ Good balance! You can explore more opportunities that fit your horizon and risk."
+
+@login_required
+def edit_transaction(request, transaction_id):
+    transaction = get_object_or_404(Transaction, id=transaction_id, user=request.user)
+    if request.method == "POST":
+        form = TransactionForm(request.POST, instance=transaction)
+        if form.is_valid():
+            form.save()
+            return redirect("view_transactions")
+    else:
+        form = TransactionForm(instance=transaction, user=request.user)
+    return render(request, "coach/edit_transaction.html", {"form": form, "transaction": transaction})
+
+
+@login_required
+def delete_transaction(request, transaction_id):
+    transaction = get_object_or_404(Transaction, id=transaction_id, user=request.user)
+    if request.method == "POST":
+        transaction.delete()
+        return redirect("view_transactions")
+    return render(request, "coach/delete_transaction.html", {"transaction": transaction})
+
+
+

@@ -1,9 +1,71 @@
-{% extends "coach/layout.html" %}
+{% extends "coach/base.html" %}
 {% block content %}
-<h2>Edit Goal: {{ goal.name }}</h2>
-<form method="post">
+<div class="edit-transaction-container">
+  <h2 class="title">🎯 Edit Goal: {{ goal.name }}</h2>
+
+  <form method="post" class="transaction-form">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Update Goal</button>
-</form>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-save">💾 Update Goal</button>
+      <a href="{% url 'dashboard' %}" class="btn btn-cancel">🔙 Cancel</a>
+    </div>
+  </form>
+</div>
+
+<style>
+.edit-transaction-container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 25px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.title {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #333;
+}
+.transaction-form p {
+  margin-bottom: 15px;
+}
+.transaction-form input,
+.transaction-form select,
+.transaction-form textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+.form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+.btn {
+  padding: 8px 15px;
+  border-radius: 6px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+.btn-save {
+  background: #e6ffed;
+  color: #057a32;
+}
+.btn-cancel {
+  background: #ffecec;
+  color: #c62828;
+}
+.btn-save:hover {
+  background: #ccffd9;
+}
+.btn-cancel:hover {
+  background: #ffcccc;
+}
+</style>
 {% endblock %}
