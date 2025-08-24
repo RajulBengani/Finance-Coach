@@ -2,7 +2,7 @@
 {% block content %}
 <div class="edit-transaction-container">
 <a href="{% url 'dashboard' %}">Go to Dashboard</a>
-  <h2 class="title">✏️ Edit Transaction</h2>
+  <h2 class="title">✏ Edit Transaction</h2>
   <p class="subtitle">Updating transaction: <strong>{{ transaction.description|default:"(No description)" }}</strong></p>
 
   <form method="post" class="transaction-form">
@@ -17,33 +17,48 @@
 </div>
 
 <style>
+  body {
+    background: linear-gradient(135deg, #571892 0%, #aa2366 50%, #000000 100%);
+    background-attachment: fixed;
+    background-size: cover;
+    /* Cover the entire viewport */
+    color: #ffffff;
+  }
 .edit-transaction-container {
-  max-width: 600px;
-  margin: 40px auto;
+  max-width: 800px;
+  margin: 60px auto;
   padding: 25px;
-  background: #fff;
+  background: rgba(220, 201, 240, 0.6); 
+  backdrop-filter: blur(10px);
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgb(48, 48, 48,0.984);
+  color: #000000;
+    /* Ensure text inside cards is white */
+  transition: box-shadow 0.2s, transform 0.2s;
 }
 .title {
   text-align: center;
   margin-bottom: 10px;
-  color: #333;
+  color: #000000;
 }
 .subtitle {
   text-align: center;
   margin-bottom: 25px;
-  color: #555;
+  color: #000000;
 }
 .transaction-form p {
   margin-bottom: 15px;
 }
+.transaction-form label {
+  color: #000000; /* Change label text color to white */
+}
+.link
 .transaction-form input,
 .transaction-form select,
 .transaction-form textarea {
   width: 100%;
   padding: 8px 10px;
-  border: 1px solid #ccc;
+  border: 1px solid #000000;
   border-radius: 6px;
 }
 .form-actions {
@@ -61,18 +76,22 @@
   font-weight: bold;
 }
 .btn-save {
-  background: #e6ffed;
-  color: #057a32;
+  background:  #571892;
+  color: #ffffff;
+   border: 1px solid #45126e;
 }
 .btn-cancel {
-  background: #ffecec;
-  color: #c62828;
+  background: #aa232a;
+  color: #ffffff;
+  border: 1px solid #8e1d58;
 }
 .btn-save:hover {
-  background: #ccffd9;
+  background: #6a1fa3; /* Slightly brighter violet for hover effect */
+  border-color: #4d1378;
 }
 .btn-cancel:hover {
-  background: #ffcccc;
+  background: #b7294d; /* Slightly brighter pink for hover effect */
+  border-color: #630934;
 }
 </style>
 {% endblock %}

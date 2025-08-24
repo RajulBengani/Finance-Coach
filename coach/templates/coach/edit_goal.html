@@ -15,13 +15,21 @@
 </div>
 
 <style>
+  body {
+  background : linear-gradient(135deg, #571892 0%, #aa2366 50%, #000000 100%);
+  background-attachment: fixed;
+  background-size: cover;
+}
 .edit-transaction-container {
-  max-width: 600px;
-  margin: 40px auto;
+  max-width: 800px;
+  margin: 80px auto;
   padding: 25px;
-  background: #fff;
+  background: rgba(220, 201, 240, 0.6);
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  backdrop-filter: blur(10px);
+  color: #000000;
+  transition: box-shadow 0.2s, transform 0.2s;
 }
 .title {
   text-align: center;
@@ -54,18 +62,22 @@
   font-weight: bold;
 }
 .btn-save {
-  background: #e6ffed;
-  color: #057a32;
+  background:  #571892;
+  color: #ffffff;
+   border: 1px solid #45126e;
 }
 .btn-cancel {
-  background: #ffecec;
-  color: #c62828;
+  background: #aa232a;
+  color: #ffffff;
+  border: 1px solid #8e1d58;
 }
 .btn-save:hover {
-  background: #ccffd9;
+  background: #6a1fa3; /* Slightly brighter violet for hover effect */
+  border-color: #4d1378;
 }
 .btn-cancel:hover {
-  background: #ffcccc;
+  background: #b7294d; /* Slightly brighter pink for hover effect */
+  border-color: #630934;
 }
 </style>
 {% endblock %}

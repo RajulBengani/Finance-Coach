@@ -90,28 +90,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <style>
 /* Reuse the same container & form styles as other pages */
+body {
+  background : linear-gradient(135deg, #571892 0%, #aa2366 50%, #000000 100%);
+  background-attachment: fixed;
+  background-size: cover;
+}
 .edit-transaction-container {
-  max-width: 600px;
-  margin: 40px auto;
+  max-width: 800px;
+  margin: 60px auto;
   padding: 25px;
-  background: #fff;
+  background: rgba(220, 201, 240, 0.5);
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow:  0 4px 20px rgba(48, 48, 48, 0.984);
+  backdrop-filter: blur(10px);
 }
 .title {
   text-align: center;
   margin-bottom: 25px;
-  color: #333;
+  color: #000000;
 }
 .transaction-form div {
   margin-bottom: 15px;
+}
+.transaction-form label {
+  color: #000000; /* Change label text color to white */
 }
 .transaction-form input,
 .transaction-form select,
 .transaction-form textarea {
   width: 100%;
   padding: 8px 10px;
-  border: 1px solid #ccc;
+  border: 1px solid #000000;
   border-radius: 6px;
 }
 .form-actions {
@@ -129,21 +138,26 @@ document.addEventListener('DOMContentLoaded', function() {
   font-weight: bold;
 }
 .btn-save {
-  background: #e6ffed;
-  color: #057a32;
+  background: #aa2366; /* Match the pink tone from the gradient */
+  color: #ffffff; /* White text for contrast */
+  border: 1px solid #8e1d58;
+  
 }
 .btn-cancel {
-  background: #ffecec;
-  color: #c62828;
+  background: #571892; /* Match the violet tone from the gradient */
+  color: #ffffff; /* White text for contrast */
+  border: 1px solid #45126e;
 }
 .btn-save:hover {
-  background: #ccffd9;
+  background: #b72970; /* Slightly brighter pink for hover effect */
+  border-color: #630934;
 }
 .btn-cancel:hover {
-  background: #ffcccc;
+  background: #6a1fa3; /* Slightly brighter violet for hover effect */
+  border-color: #4d1378;
 }
 .error {
-  color: #c62828;
+  color: #920505;
   font-size: 0.9em;
   margin-top: 3px;
 }

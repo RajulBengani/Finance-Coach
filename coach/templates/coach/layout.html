@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,25 +9,33 @@
     <title>Finance Coach</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f8f9fa;
-            margin: 0;
-            padding: 0;
-            color: #333;
+            background: linear-gradient(135deg, #571892 0%, #aa2366 50%, #000000 100%);
+            font-family: 'Poppins', sans-serif;
+
+            background-attachment: fixed;
+
+            background-size: cover;
+            /* Cover the entire viewport */
+            color: #ffffff;
+            /*Set default text color to white for better contrast */
         }
+
+        /* } */
         header {
-            background: #1a56db;
+            background: linear-gradient(135deg, #4d0574, #631e1e);
             color: #fff;
             padding: 15px 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 6px rgb(157, 121, 172);
         }
+
         header h1 {
             margin: 0;
             font-size: 1.8em;
         }
+
         nav ul {
             list-style: none;
             display: flex;
@@ -34,6 +43,7 @@
             margin: 0;
             padding: 0;
         }
+
         nav ul li a {
             text-decoration: none;
             color: #fff;
@@ -42,42 +52,49 @@
             border-radius: 6px;
             transition: background 0.3s;
         }
+
         nav ul li a:hover {
-            background: rgba(255,255,255,0.2);
+            background: rgba(121, 26, 143, 0.877);
         }
+
         main {
             padding: 30px 20px;
-            min-height: calc(100vh - 70px); /* Adjust based on header height */
+            min-height: calc(100vh - 70px);
+            /* Adjust based on header height */
         }
+
         footer {
             text-align: center;
             padding: 15px 0;
-            background: #1a56db;
+            background: linear-gradient(135deg, #4d0574, #631e1e);
             color: #fff;
             margin-top: 40px;
         }
     </style>
 </head>
+
 <body>
     <header>
-        <h1>Finance Coach</h1>
+        <h1>Tantrik Of Transactions</h1>
         <nav>
             <ul>
-                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li><a href="{% url 'dashboard' %}">YakshaView
+                    </a></li>
                 <li><a href="{% url 'add_transaction' %}">Add Transaction</a></li>
                 <li><a href="{% url 'view_transactions' %}">View Transactions</a></li>
                 <li><a href="{% url 'add_goal' %}">Add Goal</a></li>
                 <li><a href="{% url 'logout' %}">Log Out</a></li>
                 <li>
-                <div>
-                    {% if profile and profile.profile_picture %}
-                        <img src="{{ profile.profile_picture.url }}" alt="Profile Picture"
-                        class="rounded-circle me-3" style="width:40px; height:40px; object-fit:cover;">
-                    {% else %}
+                    <div>
+                        {% if profile and profile.profile_picture %}
+                        <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" class="rounded-circle me-3"
+                            style="width:40px; height:40px; object-fit:cover;">
+                        {% else %}
                         <img src="{% static 'images/default-profile.png' %}" alt="Default Profile Picture"
-                        class="rounded-circle me-3" style="width:40px; height:40px; object-fit:cover;">
-                    {% endif %}
-                </div></li>
+                            class="rounded-circle me-3" style="width:40px; height:40px; object-fit:cover;">
+                        {% endif %}
+                    </div>
+                </li>
             </ul>
         </nav>
     </header>
@@ -91,4 +108,5 @@
         &copy; {{ year|default:"2025" }} Finance Coach. All rights reserved.
     </footer>
 </body>
+
 </html>
