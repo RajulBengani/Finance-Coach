@@ -21,36 +21,30 @@
 1. **Clone the repository**
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/RajulBengani/Finance-Coach
 cd finance-coach
 ```
 
-2. **Install dependencies**
-
-```bash
-pip install -r requirements.txt
-```
-
-3. **Apply migrations**
+2. **Apply migrations**
 
 ```bash
 python manage.py migrate
 ```
 
-4. **Create a superuser (optional, for admin access)**
+3. **Create a superuser (optional, for admin access)**
 
 ```bash
 python manage.py createsuperuser
 ```
 
-5. **Run the server**
+4. **Run the server**
 
 ```bash
 python manage.py runserver
 ```
 
-6. **Open in browser**
-   Visit `http://127.0.0.1:8000/`
+5. **Open in browser**
+   Visit `http://127.0.0.1:8000/coach`
 
 ---
 
