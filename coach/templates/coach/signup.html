@@ -1,97 +1,171 @@
 {% extends 'coach/base.html' %}
+{% load static %}
 {% block content %}
-<div class="edit-transaction-container">
-  <h2 class="title">📝 Signup</h2>
-  <p class="subtitle">Create your new account</p>
+<!-- ✅ Background Video Section -->
+  <section id="home">
+    <video autoplay muted loop class="bg-video">
+      <source src="{% static 'videos/Dashboard.mp4' %}" type="video/mp4">
+      Your browser does not support HTML5 video.
+    </video>
+    <div class="overlay"></div>
+  </section>
 
-  <form method="post" enctype="multipart/form-data" class="transaction-form">
-    {% csrf_token %}
+<div class="signup-container">
+  <div class="signup-content">
+    <h2 class="title">📝 Signup</h2>
+    <p class="subtitle">Create your new account</p>
+    <form method="post" enctype="multipart/form-data" class="transaction-form">
+      {% csrf_token %}
 
-    <div>
-      {{ form.username.label_tag }}
-      {{ form.username }}
-      {% if form.username.errors %}
-        <div class="error">{{ form.username.errors }}</div>
-      {% endif %}
-    </div>
+      <div>
+        {{ form.username.label_tag }}
+        {{ form.username }}
+        {% if form.username.errors %}
+          <div class="error" >{{ form.username.errors }}</div>
+        {% endif %}
+      </div>
 
-    <div>
-      {{ form.email.label_tag }}
-      {{ form.email }}
-      {% if form.email.errors %}
-        <div class="error">{{ form.email.errors }}</div>
-      {% endif %}
-    </div>
+      <div>
+        {{ form.email.label_tag }}
+        {{ form.email }}
+        {% if form.email.errors %}
+          <div class="error">{{ form.email.errors }}</div>
+        {% endif %}
+      </div>
 
-    <div>
-      {{ form.phone_number.label_tag }}
-      {{ form.phone_number }}
-      {% if form.phone_number.errors %}
-        <div class="error">{{ form.phone_number.errors }}</div>
-      {% endif %}
-    </div>
+      <div>
+        {{ form.phone_number.label_tag }}
+        {{ form.phone_number }}
+        {% if form.phone_number.errors %}
+          <div class="error">{{ form.phone_number.errors }}</div>
+        {% endif %}
+      </div>
 
-    <div>
-      {{ form.risk_tolerance.label_tag }}
-      {{ form.risk_tolerance }}
-      {% if form.risk_tolerance.errors %}
-        <div class="error">{{ form.risk_tolerance.errors }}</div>
-      {% endif %}
-    </div>
+      <div>
+        {{ form.risk_tolerance.label_tag }}
+        {{ form.risk_tolerance }}
+        {% if form.risk_tolerance.errors %}
+          <div class="error">{{ form.risk_tolerance.errors }}</div>
+        {% endif %}
+      </div>
 
-    <div>
-      {{ form.profile_picture.label_tag }}
-      {{ form.profile_picture }}
-      {% if form.profile_picture.errors %}
-        <div class="error">{{ form.profile_picture.errors }}</div>
-      {% endif %}
-    </div>
+      <div>
+        {{ form.profile_picture.label_tag }}
+        {{ form.profile_picture }}
+        {% if form.profile_picture.errors %}
+          <div class="error">{{ form.profile_picture.errors }}</div>
+        {% endif %}
+      </div>
 
-    <div>
-      {{ form.password1.label_tag }}
-      {{ form.password1 }}
-      {% if form.password1.errors %}
-        <div class="error">{{ form.password1.errors }}</div>
-      {% endif %}
-    </div>
+      <div>
+        {{ form.password1.label_tag }}
+        {{ form.password1 }}
+        {% if form.password1.errors %}
+          <div class="error">{{ form.password1.errors }}</div>
+        {% endif %}
+      </div>
 
-    <div>
-      {{ form.password2.label_tag }}
-      {{ form.password2 }}
-      {% if form.password2.errors %}
-        <div class="error">{{ form.password2.errors }}</div>
-      {% endif %}
-    </div>
+      <div>
+        {{ form.password2.label_tag }}
+        {{ form.password2 }}
+        {% if form.password2.errors %}
+          <div class="error">{{ form.password2.errors }}</div>
+        {% endif %}
+      </div>
 
-    <div class="form-actions">
-      <button type="submit" class="btn btn-save">✅ Signup</button>
-      <a href="{% url 'login' %}" class="btn btn-cancel">🔙 Login</a>
-    </div>
-  </form>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-save">✅ Signup</button>
+        <a href="{% url 'login' %}" class="btn btn-cancel">🔙 Login</a>
+      </div>
+    </form>
+  </div>
 </div>
 
 <style>
-.edit-transaction-container {
-  max-width: 600px;
-  margin: 40px auto;
-  padding: 25px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
 }
+.bg-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1; /* stays at the back */
+}
+
+/* Dark overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.45);
+  z-index: -1; /* between video and login box */
+}
+.content {
+    position: relative;
+    z-index: 1;
+}
+/* Signup content box */
+.signup-container {
+  display:flex;
+  justify-content: flex-start;
+  align-items: center;
+  height: 100vh;
+  position:relative;
+  z-index:1;
+  padding-right: 950px;
+}
+.signup-content {
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.5);
+  background: rgba(116,128,173,0.3);
+  backdrop-filter: blur(10px);
+}
+
+/* Gradient text heading */
 .title {
   text-align: center;
   margin-bottom: 10px;
-  color: #333;
+  font-size: 2rem;
+  font-weight: bold;
+  background: linear-gradient(90deg, #ee0e21, #f573df, #604ade);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 6s ease infinite;
+  background-size: 200% 200%;
 }
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 .subtitle {
   text-align: center;
   margin-bottom: 25px;
-  color: #555;
+  color: #fff;
 }
+
 .transaction-form div {
-  margin-bottom: 15px;
+  
 }
+
 .transaction-form input,
 .transaction-form select,
 .transaction-form textarea {
@@ -100,12 +174,21 @@
   border: 1px solid #ccc;
   border-radius: 6px;
 }
+.transaction-form label {
+  background: linear-gradient(90deg, #ff9a9e, #fad0c4, #fad390);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 600; 
+}
+
 .form-actions {
   display: flex;
   justify-content: center;
   gap: 15px;
   margin-top: 20px;
 }
+
 .btn {
   padding: 8px 15px;
   border-radius: 6px;
@@ -114,24 +197,31 @@
   cursor: pointer;
   font-weight: bold;
 }
+
 .btn-save {
   background: #e6ffed;
   color: #057a32;
 }
+
 .btn-cancel {
   background: #ffecec;
   color: #c62828;
 }
+
 .btn-save:hover {
   background: #ccffd9;
 }
+
 .btn-cancel:hover {
   background: #ffcccc;
 }
+
 .error {
   color: #c62828;
   font-size: 0.9em;
   margin-top: 3px;
 }
+
 </style>
+
 {% endblock %}
